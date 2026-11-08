@@ -1,0 +1,2459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spell the French</title>
+<style>
+:root{--bg:#230B1A;--card:#2E1624;--ink:#E8E6EA;--mute:#A4A1AE;--line:#422929;--acc:#98A3BF;--accInk:#230B1A;--ok:#6fe0a8;--okbg:#17372b;--no:#ff9a8c;--nobg:#42201c;--mid:#f2c565;--midbg:#3c3016;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+
+*{box-sizing:border-box}input[type=checkbox]{accent-color:var(--acc)}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:480px;margin:0 auto;padding:14px 16px 28px}
+.top{display:flex;justify-content:space-between;font-size:14px;color:var(--mute);margin-bottom:8px}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .25s}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 18px}
+h1{font:700 34px/1.15 Georgia,"Times New Roman",serif;margin:4px 0 20px;overflow-wrap:anywhere}
+input[type=text]{width:100%;font-size:20px;padding:13px 14px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+input[type=text]:focus{outline:none;border-color:var(--acc)}
+.acc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px}
+.acc button{flex:1 0 11%;min-width:36px;height:42px;font-size:19px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+button{font:inherit;cursor:pointer}
+.main{width:100%;height:50px;font-size:18px;font-weight:600;border:0;border-radius:12px;background:var(--acc);color:var(--accInk)}
+.row{display:flex;gap:8px;margin-top:8px}
+.row button,.restart{flex:1;height:46px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--ink);font-size:16px}
+.restart{width:100%;margin-top:16px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.hint{font:600 22px/1.3 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.08em;margin:0 0 12px;min-height:0;overflow-wrap:anywhere}
+.fb{margin-top:14px;padding:12px 14px;border-radius:12px;font-size:17px;display:none}
+.fb.ok{display:block;background:var(--okbg);color:var(--ok)}
+.fb.no{display:block;background:var(--nobg);color:var(--no)}
+.fb.mid{display:block;background:var(--midbg);color:var(--mid)}
+.fb b{font:700 22px Georgia,serif;display:block;margin-top:2px}
+label.t{display:flex;gap:8px;align-items:center;margin-top:16px;color:var(--mute);font-size:15px}
+label.t input{width:20px;height:20px}
+ul{padding-left:20px;line-height:1.7}
+.end h1{margin-bottom:8px}
+[hidden]{display:none!important}
+/* multiple choice */
+.opts{display:grid;gap:8px}
+.opts button{min-height:46px;padding:8px 12px;text-align:left;font-size:18px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);overflow-wrap:anywhere}
+.opts button:disabled{cursor:default}
+.opts button.ok{background:var(--okbg);color:var(--ok);border-color:var(--ok)}
+.opts button.no{background:var(--nobg);color:var(--no);border-color:var(--no)}
+/* side menu */
+.dock{position:fixed;top:0;bottom:0;right:0;width:min(320px,86vw);transform:translateX(100%);transition:transform .25s}
+.dock.open{transform:none}
+.tab{position:absolute;left:-44px;top:42%;width:44px;height:64px;border:1px solid var(--line);border-right:0;border-radius:12px 0 0 12px;background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center;padding:0}.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.panel{height:100%;display:flex;flex-direction:column;overflow-y:auto;background:var(--card);border-left:1px solid var(--line);padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));visibility:hidden;transition:visibility 0s .25s;box-shadow:-8px 0 24px rgba(0,0,0,.12)}
+.dock.open .panel{visibility:visible;transition-delay:0s}
+.grp{margin-bottom:14px}
+.grp>span{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.seg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{flex:1;height:40px;border:0;background:transparent;color:var(--ink);font-size:15px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-checked=true]{background:var(--acc);color:var(--accInk);font-weight:600}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.note{font-size:13px;color:var(--mute);margin:6px 0 0}
+.sets label{display:flex;gap:8px;align-items:center;font-size:15px;padding:4px 0}.sets input{width:20px;height:20px}#rev{color:var(--acc);margin-left:8px}.restart+.restart{margin-top:8px}.alt{width:100%;height:46px;margin-bottom:8px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--ink);font-size:16px}
+.vh{font-size:14px;font-weight:600;margin:4px 0 6px}
+.vocab{flex:1;min-height:140px;overflow-y:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg);margin:0;padding:6px 12px;list-style:none;line-height:1.5}
+.vocab li{padding:5px 0;border-bottom:1px solid var(--line);font-size:16px}
+.vocab li:last-child{border:0}
+@media(prefers-reduced-motion:reduce){.dock,.bar i{transition:none}}
+
+/* AERO TERMINAL — visual theme; all vocabulary is in vocabulary-data. */
+:root{--bg:#071b23;--card:#102f39;--ink:#e2f6f5;--mute:#91b7bd;--line:#34565e;--acc:#7ce6cf;--accInk:#062a2c;--ok:#b3ef9b;--okbg:#193d31;--no:#ffc0b5;--nobg:#4b2b32;--mid:#ffe1a0;--midbg:#443c27}
+body{min-height:100vh;background:radial-gradient(ellipse at 8% 10%,#1c65747a,transparent 47%),radial-gradient(ellipse at 90% 85%,#357c5c45,transparent 44%),linear-gradient(155deg,#0d303f,#06151f 65%);background-attachment:fixed;font-family:'Trebuchet MS','Segoe UI',sans-serif}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,#9cebe703 3px 4px);z-index:-1}
+main{max-width:640px;padding:52px 30px 40px;transition:transform .25s}
+.masthead{display:flex;align-items:center;gap:15px;margin-bottom:43px}.masthead h2{font-size:25px;font-weight:500;letter-spacing:-.7px;margin:5px 0}.eyebrow,.online,.session-label,.question-label,.window-strip,.vh{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:1.8px}.eyebrow{color:var(--acc);margin:0}.online{margin-left:auto;color:#a5dfb0;font-size:9px;letter-spacing:1px;white-space:nowrap}
+.orb{width:56px;height:56px;flex-shrink:0;display:grid;place-items:center;border-radius:50%;font:italic 26px Georgia,serif;color:white;border:1px solid #9deee0;background:radial-gradient(ellipse at 35% 15%,#efffffde,transparent 45%),linear-gradient(160deg,#82dfcc,#188b8c 52%,#07475a);box-shadow:inset 0 -6px 12px #001f38aa,0 0 26px #6edfc32b;text-shadow:0 2px 4px #003440}
+.session-label{color:var(--mute);display:flex;justify-content:space-between;font-size:9px;margin-bottom:20px}.session-label span{color:#5a929e}.top{font:12px ui-monospace,Menlo,monospace;margin-bottom:10px}.bar{height:7px;border:1px solid #426773;background:#06151d;box-shadow:inset 0 2px 3px #0008;margin-bottom:25px}.bar i{background:linear-gradient(90deg,#329dac,#b4ef9b);box-shadow:0 0 10px #8cf3ce}
+.card{position:relative;padding:0 27px 25px;border:1px solid #5a8d976e;border-radius:16px;background:linear-gradient(135deg,#264b5680,#102b35d9 60%);box-shadow:inset 0 1px 0 #b4e8ed2b,0 20px 65px #0005;backdrop-filter:blur(18px);overflow:hidden}.window-strip{display:flex;justify-content:space-between;margin:0 -27px 27px;padding:14px 18px;font-size:9px;color:#b9dde1;background:linear-gradient(#7eacb32e,#19404b4d);border-bottom:1px solid #77a3ac30}.window-strip span:last-child{color:#7fb8b4;letter-spacing:4px}.question-label{color:#8fbac0;font-size:9px;line-height:1.6;margin:0 0 10px}h1{font:500 36px/1.2 'Trebuchet MS',sans-serif;letter-spacing:-.8px;margin:0 0 25px;text-shadow:0 2px 12px #0004}
+input[type=text]{background:#061c26b3;border:1px solid #4d7c87;box-shadow:inset 0 3px 9px #0005;border-radius:8px;font:19px ui-monospace,Menlo,monospace;padding:16px}input::placeholder{color:#7297a2}input[type=text]:focus{box-shadow:0 0 0 3px #75dec51a,inset 0 2px 8px #0005}
+.acc{gap:5px;margin:12px 0 20px}.acc button,.row button,.restart,.alt,.opts button{background:linear-gradient(#355a6380,#102f3d9e);border:1px solid #50748088;box-shadow:inset 0 1px 0 #cfecf017;border-radius:7px}.acc button{min-width:30px;height:37px;font-size:17px}.main{background:linear-gradient(#c0f4dc,#78d8c9 48%,#40b4ac 50%,#56c7b5);border:1px solid #bafbe0;border-radius:8px;color:#062d35;text-shadow:0 1px #ceffde80;box-shadow:0 4px 18px #0003,inset 0 1px white;font-size:17px}.row{gap:10px;margin-top:10px}.row button,.restart{font-size:14px}.restart{width:auto;padding:0 21px;margin-top:20px;height:38px;color:#9bbfc5}.restart+.restart{margin-left:8px;margin-top:20px}label.t{font-size:12px;margin-top:21px;line-height:1.5}label.t input{width:17px;height:17px}.hint{color:#aff0d2}.fb{font-size:14px}.fb b{font:600 22px 'Trebuchet MS',sans-serif}.end{padding-top:25px}.opts button{font-size:16px}.opts{margin-bottom:16px}
+button:hover{filter:brightness(1.14)}button:active{filter:brightness(.97)}button:disabled{filter:none}.dock{z-index:5;width:min(360px,calc(100vw - 80px))}.tab{left:-76px;width:76px;height:78px;top:125px;gap:7px;flex-direction:column;background:linear-gradient(135deg,#406c77,#12333f 55%);border-color:#719ca4;border-radius:12px 0 0 12px;box-shadow:-8px 5px 22px #0004,inset 0 1px #caffef33}.tab-label{font:10px ui-monospace,Menlo,monospace;letter-spacing:1.8px}.tab svg{width:24px;height:24px}
+.panel{display:block;overflow-y:auto;overscroll-behavior:contain;background:linear-gradient(155deg,#183e4af5,#071e29fa);backdrop-filter:blur(22px);border-color:#557c88;padding:28px 20px 30px;scrollbar-color:#5c989c #0b2732;scrollbar-width:thin;box-shadow:-20px 0 65px #0005}.panel-heading{padding-bottom:21px;margin-bottom:23px;border-bottom:1px solid var(--line)}.panel-heading h2{font-size:24px;font-weight:500;margin:10px 0 6px;letter-spacing:-.5px}.panel-heading p{font-size:12px;color:var(--mute);margin:0}.grp{margin-bottom:22px}.grp>span{font:10px ui-monospace,Menlo,monospace;text-transform:uppercase;letter-spacing:1.3px;color:#a7cbd0;margin-bottom:9px}.seg{border-radius:7px;background:#071f2a}.seg button{font-size:12px;height:37px}.seg button[aria-checked=true]{background:linear-gradient(#9ce4d3,#48a99f);box-shadow:inset 0 1px #d1fff19e}.note{font-size:11px;line-height:1.6}
+.set-folder{border:1px solid #4c77826e;border-radius:8px;margin-top:9px;overflow:hidden;background:#071e264f}.set-folder summary{cursor:pointer;padding:14px 12px;background:linear-gradient(#385b6580,#1d404b55);font-size:14px;user-select:none}.set-folder summary::marker{color:var(--acc)}.set-folder summary span{margin-left:4px}.set-folder summary small{float:right;color:#9bbec3;font:10px ui-monospace,Menlo,monospace;margin-top:3px}.folder-items{padding:6px 10px 10px}.sets label{font-size:12px;line-height:1.4;padding:8px 0;cursor:pointer;gap:9px}.sets label span{flex:1}.sets label small{font:10px ui-monospace,Menlo,monospace;color:#82a9b0}.sets input{flex-shrink:0;width:17px;height:17px}.vh{line-height:1.5;color:#b5d9d8;font-size:10px;margin:28px 0 8px}.vocab-help{margin-bottom:12px}.vocab{flex:none;min-height:0;overflow:visible;background:#051c2680;border-radius:8px;padding:0 10px}.vocab li{padding:0;border-color:#3c62694a}.vocab-word{display:block;width:100%;border:0;text-align:left;padding:12px 4px;background:transparent;color:#d9f1ec;font-size:14px;line-height:1.5;user-select:none;-webkit-user-select:none;touch-action:pan-y}.vocab-word.held{color:#b4ffdb}.translation{display:block;color:#92c7d0;font-size:12px;padding-top:3px}.vocab-word:focus-visible{outline-offset:-2px}
+@media(min-width:1100px){body.menu-open main{transform:translateX(-150px)}}
+@media(max-width:600px){main{padding:28px 24px 28px 16px;margin-right:48px}.masthead{gap:10px;margin-bottom:30px}.masthead h2{font-size:20px}.orb{width:43px;height:43px;font-size:23px}.eyebrow{font-size:8px;letter-spacing:1px}.online,.session-label span{display:none}.card{padding-left:17px;padding-right:17px}.window-strip{margin-left:-17px;margin-right:-17px;font-size:8px;padding:12px}.window-strip span:last-child{display:none}h1{font-size:29px}.tab{top:107px}.acc button{flex-basis:16%;min-width:27px}.panel{padding:23px 15px}.session-label{font-size:9px}.row button{font-size:12px}}
+@media(prefers-reduced-motion:reduce){main{transition:none}}
+
+/* Minimal chrome and classic system fonts. */
+html,body{font-family:Tahoma,Verdana,'Trebuchet MS',sans-serif}
+main{padding-top:44px}
+.card{padding-top:25px}
+h1,.fb b{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:400;letter-spacing:0;line-height:1.3}
+input[type=text],.hint,.top,.vh{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:0}
+button,input{font-family:inherit}
+.acc button,.main,.row button,.restart,.alt,.opts button,.seg button,.sets label,.vocab-word{font-family:Tahoma,Verdana,sans-serif}
+.grp>span,.set-folder summary small,.sets label small{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:0;text-transform:none}
+.tab{width:38px;left:-38px;height:160px;top:34%;padding:0;gap:0;border-radius:10px 0 0 10px}
+.tab svg{width:21px;height:34px}
+.dock{width:min(360px,calc(100vw - 48px))}
+@media(max-width:600px){main{padding-top:28px;margin-right:22px;padding-right:18px}.card{padding-top:22px}.tab{top:30%;height:150px}h1{font-size:27px}}
+
+/* Readable accents and a classic serif vocabulary prompt. */
+h1,.fb b{font-family:Georgia,'Times New Roman',serif}
+input[type=text]{font-family:Tahoma,Verdana,sans-serif}
+.top,#prog,#sc{font-family:Tahoma,Verdana,sans-serif}
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><span><span id="prog"></span><b id="rev" hidden>Review</b></span><span id="sc"></span></div>
+  <div class="bar"><i id="fill"></i></div>
+
+  <section class="card" id="quiz">
+    <h1 id="en"></h1>
+    <p class="hint" id="hint" hidden></p>
+    <input type="text" id="in" placeholder="French spelling" lang="fr" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="French spelling">
+    <div class="acc" id="accs"></div>
+    <div class="opts" id="opts" hidden></div>
+    <button class="alt" id="pb" hidden>Check</button>
+    <button class="main" id="go">Check</button>
+    <div class="row" id="row2"><button id="hb">Hint</button><button id="sb">Show answer</button></div>
+    <div class="fb" id="fb" role="status" aria-live="polite"></div>
+    <label class="t" id="artl"><input type="checkbox" id="art" checked> Include the article (un, une, le, la, l’, les, des)</label>
+  </section>
+
+  <section class="card end" id="end" hidden>
+    <h1 id="endt"></h1>
+    <div id="endm"></div>
+    <div class="row"><button id="again">Start over</button><button id="redo">Practice missed</button></div>
+  </section>
+
+  <button class="restart" id="restart">Restart</button>
+  <button class="restart" id="endb">End</button>
+</main>
+
+<div class="dock" id="dock">
+  <button class="tab" id="mb" aria-expanded="false" aria-controls="panel" aria-label="Open menu"><svg id="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16M12 4v16M17 4v16"/></svg></button>
+  <aside class="panel" id="panel" aria-label="Settings and vocabulary">
+    <div class="grp"><span id="l1">Card Order</span>
+      <div class="seg" role="radiogroup" aria-labelledby="l1">
+        <button role="radio" data-k="order" data-v="random">Random</button><button role="radio" data-k="order" data-v="ordered">Ordered</button>
+      </div></div>
+    <div class="grp"><span id="l2">Answer Language</span>
+      <div class="seg" role="radiogroup" aria-labelledby="l2">
+        <button role="radio" data-k="lang" data-v="en">English</button><button role="radio" data-k="lang" data-v="fr">French</button>
+      </div></div>
+    <div class="grp"><span id="l3">Mode</span>
+      <div class="seg" role="radiogroup" aria-labelledby="l3">
+        <button role="radio" data-k="mode" data-v="typing">Typing</button><button role="radio" data-k="mode" data-v="mc">Multiple Choice</button>
+      </div>
+      <p class="note" id="lock" hidden>Locked to Multiple Choice while answering in English.</p></div>
+    <div class="grp"><span id="l4">Vocab Sets</span><div class="sets" id="sets"></div></div>
+    <p class="vh" id="vh"></p>
+    <ul class="vocab" id="vocab" aria-labelledby="vh"></ul>
+  </aside>
+</div>
+<!-- EDIT VOCABULARY HERE — no build tools or server required.
+   title: app/browser title. Folder and set name: any display name you like.
+   id: stable unique identifier; folder: the matching folder id.
+   selected: whether this set starts checked.
+   words: en = English prompt, fr = array of accepted French answers,
+          display = optional French label when there are several variants.
+   Add/copy/remove word objects or entire sets here. Keep valid JSON (no trailing commas).
+   All words are explicit, including numbers and adjective forms.
+   You may rename this HTML file freely; it has no external dependencies.
+-->
+<script type="application/json" id="vocabulary-data">
+{
+  "title": "Spell the French",
+  "folders": [
+    {
+      "id": "unit-3",
+      "name": "Unit 3"
+    },
+    {
+      "id": "unit-4",
+      "name": "Unit 4"
+    }
+  ],
+  "sets": [
+    {
+      "id": "family-1",
+      "name": "Famille 1",
+      "folder": "unit-3",
+      "selected": false,
+      "words": [
+        {
+          "en": "cousin",
+          "fr": [
+            "un cousin",
+            "une cousine"
+          ],
+          "display": "un(e) cousin(e)"
+        },
+        {
+          "en": "children",
+          "fr": [
+            "les enfants"
+          ]
+        },
+        {
+          "en": "husband",
+          "fr": [
+            "un époux"
+          ]
+        },
+        {
+          "en": "wife",
+          "fr": [
+            "une épouse"
+          ]
+        },
+        {
+          "en": "woman",
+          "fr": [
+            "une femme"
+          ]
+        },
+        {
+          "en": "family",
+          "fr": [
+            "une famille"
+          ]
+        },
+        {
+          "en": "daughter",
+          "fr": [
+            "une fille"
+          ]
+        },
+        {
+          "en": "girl",
+          "fr": [
+            "une fille"
+          ]
+        },
+        {
+          "en": "son",
+          "fr": [
+            "un fils"
+          ]
+        },
+        {
+          "en": "brother",
+          "fr": [
+            "un frère"
+          ]
+        },
+        {
+          "en": "grandmother",
+          "fr": [
+            "une grand-mère"
+          ]
+        },
+        {
+          "en": "grandfather",
+          "fr": [
+            "un grand-père"
+          ]
+        },
+        {
+          "en": "grandparents",
+          "fr": [
+            "les grands-parents"
+          ]
+        },
+        {
+          "en": "mother",
+          "fr": [
+            "une mère"
+          ]
+        },
+        {
+          "en": "nephew",
+          "fr": [
+            "un neveu"
+          ]
+        },
+        {
+          "en": "niece",
+          "fr": [
+            "une nièce"
+          ]
+        },
+        {
+          "en": "uncle",
+          "fr": [
+            "un oncle"
+          ]
+        },
+        {
+          "en": "parents",
+          "fr": [
+            "les parents"
+          ]
+        },
+        {
+          "en": "father",
+          "fr": [
+            "un père"
+          ]
+        },
+        {
+          "en": "granddaughter",
+          "fr": [
+            "une petite-fille"
+          ]
+        },
+        {
+          "en": "grandson",
+          "fr": [
+            "un petit-fils"
+          ]
+        },
+        {
+          "en": "grandchildren",
+          "fr": [
+            "les petits-enfants"
+          ]
+        },
+        {
+          "en": "sister",
+          "fr": [
+            "une sœur"
+          ]
+        },
+        {
+          "en": "aunt",
+          "fr": [
+            "une tante"
+          ]
+        },
+        {
+          "en": "cat",
+          "fr": [
+            "un chat"
+          ]
+        },
+        {
+          "en": "dog",
+          "fr": [
+            "un chien"
+          ]
+        },
+        {
+          "en": "bird",
+          "fr": [
+            "un oiseau"
+          ]
+        },
+        {
+          "en": "fish",
+          "fr": [
+            "un poisson"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "family-2",
+      "name": "Famille 2",
+      "folder": "unit-3",
+      "selected": false,
+      "words": [
+        {
+          "en": "elder",
+          "fr": [
+            "aîné",
+            "aînée"
+          ],
+          "display": "aîné(e)"
+        },
+        {
+          "en": "younger",
+          "fr": [
+            "cadet",
+            "cadette"
+          ],
+          "display": "cadet(te)"
+        },
+        {
+          "en": "brother-in-law",
+          "fr": [
+            "un beau-frère"
+          ]
+        },
+        {
+          "en": "father-in-law / stepfather",
+          "fr": [
+            "un beau-père"
+          ]
+        },
+        {
+          "en": "mother-in-law / stepmother",
+          "fr": [
+            "une belle-mère"
+          ]
+        },
+        {
+          "en": "sister-in-law",
+          "fr": [
+            "une belle-sœur"
+          ]
+        },
+        {
+          "en": "half-brother / stepbrother",
+          "fr": [
+            "un demi-frère"
+          ]
+        },
+        {
+          "en": "half-sister / stepsister",
+          "fr": [
+            "une demi-sœur"
+          ]
+        },
+        {
+          "en": "to divorce",
+          "fr": [
+            "divorcer"
+          ]
+        },
+        {
+          "en": "to marry",
+          "fr": [
+            "épouser"
+          ]
+        },
+        {
+          "en": "single",
+          "fr": [
+            "célibataire"
+          ]
+        },
+        {
+          "en": "divorced",
+          "fr": [
+            "divorcé",
+            "divorcée"
+          ],
+          "display": "divorcé(e)"
+        },
+        {
+          "en": "engaged",
+          "fr": [
+            "fiancé",
+            "fiancée"
+          ],
+          "display": "fiancé(e)"
+        },
+        {
+          "en": "married",
+          "fr": [
+            "marié",
+            "mariée"
+          ],
+          "display": "marié(e)"
+        },
+        {
+          "en": "separated",
+          "fr": [
+            "séparé",
+            "séparée"
+          ],
+          "display": "séparé(e)"
+        },
+        {
+          "en": "widowed",
+          "fr": [
+            "veuf",
+            "veuve"
+          ],
+          "display": "veuf / veuve"
+        },
+        {
+          "en": "neighbor",
+          "fr": [
+            "un voisin",
+            "une voisine"
+          ],
+          "display": "un(e) voisin(e)"
+        }
+      ]
+    },
+    {
+      "id": "location",
+      "name": "Prepositions of location",
+      "folder": "unit-3",
+      "selected": false,
+      "words": [
+        {
+          "en": "next to",
+          "fr": [
+            "à côté de"
+          ]
+        },
+        {
+          "en": "to the right of",
+          "fr": [
+            "à droite de"
+          ]
+        },
+        {
+          "en": "to the left of",
+          "fr": [
+            "à gauche de"
+          ]
+        },
+        {
+          "en": "in",
+          "fr": [
+            "dans",
+            "en"
+          ],
+          "display": "dans / en"
+        },
+        {
+          "en": "behind",
+          "fr": [
+            "derrière"
+          ]
+        },
+        {
+          "en": "in front of",
+          "fr": [
+            "devant"
+          ]
+        },
+        {
+          "en": "facing, across from",
+          "fr": [
+            "en face de"
+          ]
+        },
+        {
+          "en": "between",
+          "fr": [
+            "entre"
+          ]
+        },
+        {
+          "en": "far from",
+          "fr": [
+            "loin de"
+          ]
+        },
+        {
+          "en": "close to, near",
+          "fr": [
+            "près de"
+          ]
+        },
+        {
+          "en": "under",
+          "fr": [
+            "sous"
+          ]
+        },
+        {
+          "en": "on",
+          "fr": [
+            "sur"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "numbers",
+      "name": "Numbers 61–100",
+      "folder": "unit-3",
+      "selected": false,
+      "words": [
+        {
+          "en": "61",
+          "fr": [
+            "soixante et un"
+          ]
+        },
+        {
+          "en": "62",
+          "fr": [
+            "soixante-deux"
+          ]
+        },
+        {
+          "en": "63",
+          "fr": [
+            "soixante-trois"
+          ]
+        },
+        {
+          "en": "64",
+          "fr": [
+            "soixante-quatre"
+          ]
+        },
+        {
+          "en": "65",
+          "fr": [
+            "soixante-cinq"
+          ]
+        },
+        {
+          "en": "66",
+          "fr": [
+            "soixante-six"
+          ]
+        },
+        {
+          "en": "67",
+          "fr": [
+            "soixante-sept"
+          ]
+        },
+        {
+          "en": "68",
+          "fr": [
+            "soixante-huit"
+          ]
+        },
+        {
+          "en": "69",
+          "fr": [
+            "soixante-neuf"
+          ]
+        },
+        {
+          "en": "70",
+          "fr": [
+            "soixante-dix"
+          ]
+        },
+        {
+          "en": "71",
+          "fr": [
+            "soixante et onze"
+          ]
+        },
+        {
+          "en": "72",
+          "fr": [
+            "soixante-douze"
+          ]
+        },
+        {
+          "en": "73",
+          "fr": [
+            "soixante-treize"
+          ]
+        },
+        {
+          "en": "74",
+          "fr": [
+            "soixante-quatorze"
+          ]
+        },
+        {
+          "en": "75",
+          "fr": [
+            "soixante-quinze"
+          ]
+        },
+        {
+          "en": "76",
+          "fr": [
+            "soixante-seize"
+          ]
+        },
+        {
+          "en": "77",
+          "fr": [
+            "soixante-dix-sept"
+          ]
+        },
+        {
+          "en": "78",
+          "fr": [
+            "soixante-dix-huit"
+          ]
+        },
+        {
+          "en": "79",
+          "fr": [
+            "soixante-dix-neuf"
+          ]
+        },
+        {
+          "en": "80",
+          "fr": [
+            "quatre-vingts"
+          ]
+        },
+        {
+          "en": "81",
+          "fr": [
+            "quatre-vingt-un"
+          ]
+        },
+        {
+          "en": "82",
+          "fr": [
+            "quatre-vingt-deux"
+          ]
+        },
+        {
+          "en": "83",
+          "fr": [
+            "quatre-vingt-trois"
+          ]
+        },
+        {
+          "en": "84",
+          "fr": [
+            "quatre-vingt-quatre"
+          ]
+        },
+        {
+          "en": "85",
+          "fr": [
+            "quatre-vingt-cinq"
+          ]
+        },
+        {
+          "en": "86",
+          "fr": [
+            "quatre-vingt-six"
+          ]
+        },
+        {
+          "en": "87",
+          "fr": [
+            "quatre-vingt-sept"
+          ]
+        },
+        {
+          "en": "88",
+          "fr": [
+            "quatre-vingt-huit"
+          ]
+        },
+        {
+          "en": "89",
+          "fr": [
+            "quatre-vingt-neuf"
+          ]
+        },
+        {
+          "en": "90",
+          "fr": [
+            "quatre-vingt-dix"
+          ]
+        },
+        {
+          "en": "91",
+          "fr": [
+            "quatre-vingt-onze"
+          ]
+        },
+        {
+          "en": "92",
+          "fr": [
+            "quatre-vingt-douze"
+          ]
+        },
+        {
+          "en": "93",
+          "fr": [
+            "quatre-vingt-treize"
+          ]
+        },
+        {
+          "en": "94",
+          "fr": [
+            "quatre-vingt-quatorze"
+          ]
+        },
+        {
+          "en": "95",
+          "fr": [
+            "quatre-vingt-quinze"
+          ]
+        },
+        {
+          "en": "96",
+          "fr": [
+            "quatre-vingt-seize"
+          ]
+        },
+        {
+          "en": "97",
+          "fr": [
+            "quatre-vingt-dix-sept"
+          ]
+        },
+        {
+          "en": "98",
+          "fr": [
+            "quatre-vingt-dix-huit"
+          ]
+        },
+        {
+          "en": "99",
+          "fr": [
+            "quatre-vingt-dix-neuf"
+          ]
+        },
+        {
+          "en": "100",
+          "fr": [
+            "cent"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vocabulary",
+      "name": "Vocabulaire",
+      "folder": "unit-3",
+      "selected": false,
+      "words": [
+        {
+          "en": "active",
+          "fr": [
+            "actif",
+            "active",
+            "actif / active"
+          ],
+          "display": "actif / active"
+        },
+        {
+          "en": "unpleasant",
+          "fr": [
+            "antipathique"
+          ]
+        },
+        {
+          "en": "brave",
+          "fr": [
+            "courageux",
+            "courageuse",
+            "courageux / courageuse"
+          ],
+          "display": "courageux / courageuse"
+        },
+        {
+          "en": "cruel",
+          "fr": [
+            "cruel",
+            "cruelle"
+          ],
+          "display": "cruel(le)"
+        },
+        {
+          "en": "sweet; soft",
+          "fr": [
+            "doux",
+            "douce",
+            "doux / douce"
+          ],
+          "display": "doux / douce"
+        },
+        {
+          "en": "boring",
+          "fr": [
+            "ennuyeux",
+            "ennuyeuse",
+            "ennuyeux / ennuyeuse"
+          ],
+          "display": "ennuyeux / ennuyeuse"
+        },
+        {
+          "en": "foreign",
+          "fr": [
+            "étranger",
+            "étrangère",
+            "étranger / étrangère"
+          ],
+          "display": "étranger / étrangère"
+        },
+        {
+          "en": "weak",
+          "fr": [
+            "faible"
+          ]
+        },
+        {
+          "en": "favorite",
+          "fr": [
+            "favori",
+            "favorite"
+          ],
+          "display": "favori(te)"
+        },
+        {
+          "en": "crazy",
+          "fr": [
+            "fou",
+            "folle",
+            "fou / folle"
+          ],
+          "display": "fou / folle"
+        },
+        {
+          "en": "generous",
+          "fr": [
+            "généreux",
+            "généreuse",
+            "généreux / généreuse"
+          ],
+          "display": "généreux / généreuse"
+        },
+        {
+          "en": "great",
+          "fr": [
+            "génial",
+            "géniale",
+            "géniaux"
+          ],
+          "display": "génial(e) (géniaux m., pl.)"
+        },
+        {
+          "en": "nice",
+          "fr": [
+            "gentil",
+            "gentille"
+          ],
+          "display": "gentil(le)"
+        },
+        {
+          "en": "slow",
+          "fr": [
+            "lent",
+            "lente"
+          ],
+          "display": "lent(e)"
+        },
+        {
+          "en": "mean",
+          "fr": [
+            "méchant",
+            "méchante"
+          ],
+          "display": "méchant(e)"
+        },
+        {
+          "en": "modest",
+          "fr": [
+            "modeste"
+          ]
+        },
+        {
+          "en": "annoying",
+          "fr": [
+            "pénible"
+          ]
+        },
+        {
+          "en": "ready",
+          "fr": [
+            "prêt",
+            "prête"
+          ],
+          "display": "prêt(e)"
+        },
+        {
+          "en": "athletic",
+          "fr": [
+            "sportif",
+            "sportive",
+            "sportif / sportive"
+          ],
+          "display": "sportif / sportive"
+        },
+        {
+          "en": "architect",
+          "fr": [
+            "un architecte",
+            "une architecte"
+          ],
+          "display": "un(e) architecte"
+        },
+        {
+          "en": "artist",
+          "fr": [
+            "un artiste",
+            "une artiste"
+          ],
+          "display": "un(e) artiste"
+        },
+        {
+          "en": "athlete",
+          "fr": [
+            "un athlète",
+            "une athlète"
+          ],
+          "display": "un(e) athlète"
+        },
+        {
+          "en": "lawyer",
+          "fr": [
+            "un avocat",
+            "une avocate"
+          ],
+          "display": "un(e) avocat(e)"
+        },
+        {
+          "en": "dentist",
+          "fr": [
+            "un dentiste",
+            "une dentiste"
+          ],
+          "display": "un(e) dentiste"
+        },
+        {
+          "en": "businessman/woman",
+          "fr": [
+            "un homme d'affaires",
+            "une femme d'affaires"
+          ],
+          "display": "un homme / une femme d'affaires"
+        },
+        {
+          "en": "engineer",
+          "fr": [
+            "un ingénieur"
+          ]
+        },
+        {
+          "en": "journalist",
+          "fr": [
+            "un journaliste",
+            "une journaliste"
+          ],
+          "display": "un(e) journaliste"
+        },
+        {
+          "en": "doctor",
+          "fr": [
+            "un médecin"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irregular-adjectives",
+      "name": "Some irregular adjectives",
+      "folder": "unit-3",
+      "selected": false,
+      "words": [
+        {
+          "en": "beautiful; handsome (masc. sing.)",
+          "fr": [
+            "beau"
+          ]
+        },
+        {
+          "en": "beautiful; handsome (fem. sing.)",
+          "fr": [
+            "belle"
+          ]
+        },
+        {
+          "en": "beautiful; handsome (masc. pl.)",
+          "fr": [
+            "beaux"
+          ]
+        },
+        {
+          "en": "beautiful; handsome (fem. pl.)",
+          "fr": [
+            "belles"
+          ]
+        },
+        {
+          "en": "good; kind (masc. sing.)",
+          "fr": [
+            "bon"
+          ]
+        },
+        {
+          "en": "good; kind (fem. sing.)",
+          "fr": [
+            "bonne"
+          ]
+        },
+        {
+          "en": "good; kind (masc. pl.)",
+          "fr": [
+            "bons"
+          ]
+        },
+        {
+          "en": "good; kind (fem. pl.)",
+          "fr": [
+            "bonnes"
+          ]
+        },
+        {
+          "en": "proud (masc. sing.)",
+          "fr": [
+            "fier"
+          ]
+        },
+        {
+          "en": "proud (fem. sing.)",
+          "fr": [
+            "fière"
+          ]
+        },
+        {
+          "en": "proud (masc. pl.)",
+          "fr": [
+            "fiers"
+          ]
+        },
+        {
+          "en": "proud (fem. pl.)",
+          "fr": [
+            "fières"
+          ]
+        },
+        {
+          "en": "fat (masc. sing.)",
+          "fr": [
+            "gros"
+          ]
+        },
+        {
+          "en": "fat (fem. sing.)",
+          "fr": [
+            "grosse"
+          ]
+        },
+        {
+          "en": "fat (masc. pl.)",
+          "fr": [
+            "gros"
+          ]
+        },
+        {
+          "en": "fat (fem. pl.)",
+          "fr": [
+            "grosses"
+          ]
+        },
+        {
+          "en": "happy (masc. sing.)",
+          "fr": [
+            "heureux"
+          ]
+        },
+        {
+          "en": "happy (fem. sing.)",
+          "fr": [
+            "heureuse"
+          ]
+        },
+        {
+          "en": "happy (masc. pl.)",
+          "fr": [
+            "heureux"
+          ]
+        },
+        {
+          "en": "happy (fem. pl.)",
+          "fr": [
+            "heureuses"
+          ]
+        },
+        {
+          "en": "intellectual (masc. sing.)",
+          "fr": [
+            "intellectuel"
+          ]
+        },
+        {
+          "en": "intellectual (fem. sing.)",
+          "fr": [
+            "intellectuelle"
+          ]
+        },
+        {
+          "en": "intellectual (masc. pl.)",
+          "fr": [
+            "intellectuels"
+          ]
+        },
+        {
+          "en": "intellectual (fem. pl.)",
+          "fr": [
+            "intellectuelles"
+          ]
+        },
+        {
+          "en": "long (masc. sing.)",
+          "fr": [
+            "long"
+          ]
+        },
+        {
+          "en": "long (fem. sing.)",
+          "fr": [
+            "longue"
+          ]
+        },
+        {
+          "en": "long (masc. pl.)",
+          "fr": [
+            "longs"
+          ]
+        },
+        {
+          "en": "long (fem. pl.)",
+          "fr": [
+            "longues"
+          ]
+        },
+        {
+          "en": "naive (masc. sing.)",
+          "fr": [
+            "naïf"
+          ]
+        },
+        {
+          "en": "naive (fem. sing.)",
+          "fr": [
+            "naïve"
+          ]
+        },
+        {
+          "en": "naive (masc. pl.)",
+          "fr": [
+            "naïfs"
+          ]
+        },
+        {
+          "en": "naive (fem. pl.)",
+          "fr": [
+            "naïves"
+          ]
+        },
+        {
+          "en": "red-haired (masc. sing.)",
+          "fr": [
+            "roux"
+          ]
+        },
+        {
+          "en": "red-haired (fem. sing.)",
+          "fr": [
+            "rousse"
+          ]
+        },
+        {
+          "en": "red-haired (masc. pl.)",
+          "fr": [
+            "roux"
+          ]
+        },
+        {
+          "en": "red-haired (fem. pl.)",
+          "fr": [
+            "rousses"
+          ]
+        },
+        {
+          "en": "old (masc. sing.)",
+          "fr": [
+            "vieux"
+          ]
+        },
+        {
+          "en": "old (fem. sing.)",
+          "fr": [
+            "vieille"
+          ]
+        },
+        {
+          "en": "old (masc. pl.)",
+          "fr": [
+            "vieux"
+          ]
+        },
+        {
+          "en": "old (fem. pl.)",
+          "fr": [
+            "vieilles"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "physical-description",
+      "name": "Adjectives of physical description",
+      "folder": "unit-3",
+      "selected": false,
+      "words": [
+        {
+          "en": "blue",
+          "fr": [
+            "bleu",
+            "bleue"
+          ],
+          "display": "bleu(e)"
+        },
+        {
+          "en": "blond",
+          "fr": [
+            "blond",
+            "blonde"
+          ],
+          "display": "blond(e)"
+        },
+        {
+          "en": "dark (hair)",
+          "fr": [
+            "brun",
+            "brune"
+          ],
+          "display": "brun(e)"
+        },
+        {
+          "en": "brown (hair)",
+          "fr": [
+            "châtain"
+          ]
+        },
+        {
+          "en": "short",
+          "fr": [
+            "court",
+            "courte"
+          ],
+          "display": "court(e)"
+        },
+        {
+          "en": "tall, big",
+          "fr": [
+            "grand",
+            "grande"
+          ],
+          "display": "grand(e)"
+        },
+        {
+          "en": "young",
+          "fr": [
+            "jeune"
+          ]
+        },
+        {
+          "en": "pretty",
+          "fr": [
+            "joli",
+            "jolie"
+          ],
+          "display": "joli(e)"
+        },
+        {
+          "en": "ugly",
+          "fr": [
+            "laid",
+            "laide"
+          ],
+          "display": "laid(e)"
+        },
+        {
+          "en": "brown (not for hair)",
+          "fr": [
+            "marron"
+          ]
+        },
+        {
+          "en": "black",
+          "fr": [
+            "noir",
+            "noire"
+          ],
+          "display": "noir(e)"
+        },
+        {
+          "en": "small, short (stature)",
+          "fr": [
+            "petit",
+            "petite"
+          ],
+          "display": "petit(e)"
+        },
+        {
+          "en": "straight (hair)",
+          "fr": [
+            "raide"
+          ]
+        },
+        {
+          "en": "green",
+          "fr": [
+            "vert",
+            "verte"
+          ],
+          "display": "vert(e)"
+        }
+      ]
+    },
+    {
+      "id": "possessives",
+      "name": "Possessive adjectives",
+      "folder": "unit-3",
+      "selected": false,
+      "words": [
+        {
+          "en": "my",
+          "fr": [
+            "mon, ma, mes"
+          ]
+        },
+        {
+          "en": "your (fam. and sing.)",
+          "fr": [
+            "ton, ta, tes"
+          ]
+        },
+        {
+          "en": "his, her, its",
+          "fr": [
+            "son, sa, ses"
+          ]
+        },
+        {
+          "en": "our",
+          "fr": [
+            "notre, notre, nos"
+          ]
+        },
+        {
+          "en": "your (form. or pl.)",
+          "fr": [
+            "votre, votre, vos"
+          ]
+        },
+        {
+          "en": "their",
+          "fr": [
+            "leur, leur, leurs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lesson-3a",
+      "name": "Leçon 3A additions",
+      "folder": "unit-3",
+      "selected": false,
+      "words": [
+        {
+          "en": "curly",
+          "fr": [
+            "frisé",
+            "frisée"
+          ],
+          "display": "frisé(e)"
+        },
+        {
+          "en": "bad",
+          "fr": [
+            "mauvais",
+            "mauvaise"
+          ],
+          "display": "mauvais(e)"
+        },
+        {
+          "en": "poor; unfortunate",
+          "fr": [
+            "pauvre"
+          ]
+        },
+        {
+          "en": "true; real",
+          "fr": [
+            "vrai",
+            "vraie"
+          ],
+          "display": "vrai(e)"
+        },
+        {
+          "en": "medium-sized",
+          "fr": [
+            "de taille moyenne"
+          ]
+        },
+        {
+          "en": "curious",
+          "fr": [
+            "curieux",
+            "curieuse",
+            "curieux / curieuse"
+          ],
+          "display": "curieux / curieuse"
+        },
+        {
+          "en": "unhappy",
+          "fr": [
+            "malheureux",
+            "malheureuse",
+            "malheureux / malheureuse"
+          ],
+          "display": "malheureux / malheureuse"
+        },
+        {
+          "en": "nervous",
+          "fr": [
+            "nerveux",
+            "nerveuse",
+            "nerveux / nerveuse"
+          ],
+          "display": "nerveux / nerveuse"
+        },
+        {
+          "en": "new",
+          "fr": [
+            "nouveau",
+            "nouvelle",
+            "nouveau / nouvelle"
+          ],
+          "display": "nouveau / nouvelle"
+        },
+        {
+          "en": "serious",
+          "fr": [
+            "sérieux",
+            "sérieuse",
+            "sérieux / sérieuse"
+          ],
+          "display": "sérieux / sérieuse"
+        }
+      ]
+    },
+    {
+      "id": "lesson-3b",
+      "name": "Leçon 3B additions",
+      "folder": "unit-3",
+      "selected": false,
+      "words": [
+        {
+          "en": "funny",
+          "fr": [
+            "drôle"
+          ]
+        },
+        {
+          "en": "tired",
+          "fr": [
+            "fatigué",
+            "fatiguée"
+          ],
+          "display": "fatigué(e)"
+        },
+        {
+          "en": "strong",
+          "fr": [
+            "fort",
+            "forte"
+          ],
+          "display": "fort(e)"
+        },
+        {
+          "en": "fast",
+          "fr": [
+            "rapide"
+          ]
+        },
+        {
+          "en": "sad",
+          "fr": [
+            "triste"
+          ]
+        },
+        {
+          "en": "discreet; unassuming",
+          "fr": [
+            "discret",
+            "discrète",
+            "discret / discrète"
+          ],
+          "display": "discret / discrète"
+        },
+        {
+          "en": "worried",
+          "fr": [
+            "inquiet",
+            "inquiète",
+            "inquiet / inquiète"
+          ],
+          "display": "inquiet / inquiète"
+        },
+        {
+          "en": "jealous",
+          "fr": [
+            "jaloux",
+            "jalouse",
+            "jaloux / jalouse"
+          ],
+          "display": "jaloux / jalouse"
+        },
+        {
+          "en": "lazy",
+          "fr": [
+            "paresseux",
+            "paresseuse",
+            "paresseux / paresseuse"
+          ],
+          "display": "paresseux / paresseuse"
+        },
+        {
+          "en": "hard-working",
+          "fr": [
+            "travailleur",
+            "travailleuse",
+            "travailleur / travailleuse"
+          ],
+          "display": "travailleur / travailleuse"
+        },
+        {
+          "en": "hairdresser",
+          "fr": [
+            "un coiffeur",
+            "une coiffeuse"
+          ],
+          "display": "un coiffeur / une coiffeuse"
+        },
+        {
+          "en": "musician",
+          "fr": [
+            "un musicien",
+            "une musicienne"
+          ],
+          "display": "un(e) musicien(ne)"
+        },
+        {
+          "en": "owner; landlord/lady",
+          "fr": [
+            "un propriétaire",
+            "une propriétaire"
+          ],
+          "display": "un(e) propriétaire"
+        },
+        {
+          "en": "by",
+          "fr": [
+            "par"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "city-life",
+      "name": "City life",
+      "folder": "unit-4",
+      "selected": false,
+      "words": [
+        {
+          "en": "house",
+          "fr": [
+            "une maison"
+          ]
+        },
+        {
+          "en": "grocery store",
+          "fr": [
+            "une épicerie"
+          ]
+        },
+        {
+          "en": "café terrace",
+          "fr": [
+            "une terrasse de café"
+          ]
+        },
+        {
+          "en": "town square",
+          "fr": [
+            "une place"
+          ]
+        },
+        {
+          "en": "kiosk",
+          "fr": [
+            "un kiosque"
+          ]
+        },
+        {
+          "en": "church",
+          "fr": [
+            "une église"
+          ]
+        },
+        {
+          "en": "mountain",
+          "fr": [
+            "une montagne"
+          ]
+        },
+        {
+          "en": "to dance",
+          "fr": [
+            "danser"
+          ]
+        },
+        {
+          "en": "to explore",
+          "fr": [
+            "explorer"
+          ]
+        },
+        {
+          "en": "to frequent; to visit",
+          "fr": [
+            "fréquenter"
+          ]
+        },
+        {
+          "en": "to invite",
+          "fr": [
+            "inviter"
+          ]
+        },
+        {
+          "en": "to swim",
+          "fr": [
+            "nager"
+          ]
+        },
+        {
+          "en": "to skate",
+          "fr": [
+            "patiner"
+          ]
+        },
+        {
+          "en": "to leave",
+          "fr": [
+            "quitter"
+          ]
+        },
+        {
+          "en": "to chat",
+          "fr": [
+            "bavarder"
+          ]
+        },
+        {
+          "en": "to stop by; to pass",
+          "fr": [
+            "passer"
+          ]
+        },
+        {
+          "en": "to have lunch",
+          "fr": [
+            "déjeuner"
+          ]
+        },
+        {
+          "en": "to spend (money)",
+          "fr": [
+            "dépenser"
+          ]
+        },
+        {
+          "en": "suburbs",
+          "fr": [
+            "une banlieue"
+          ]
+        },
+        {
+          "en": "nightclub",
+          "fr": [
+            "une boîte de nuit",
+            "une boîte",
+            "une boîte (de nuit)"
+          ],
+          "display": "une boîte (de nuit)"
+        },
+        {
+          "en": "office; desk",
+          "fr": [
+            "un bureau"
+          ]
+        },
+        {
+          "en": "shopping center, mall",
+          "fr": [
+            "un centre commercial"
+          ]
+        },
+        {
+          "en": "city/town center, downtown",
+          "fr": [
+            "un centre-ville"
+          ]
+        },
+        {
+          "en": "movie theater, movies",
+          "fr": [
+            "un cinéma",
+            "un ciné",
+            "un cinéma (ciné)"
+          ],
+          "display": "un cinéma (ciné)"
+        },
+        {
+          "en": "place",
+          "fr": [
+            "un endroit",
+            "un lieu"
+          ],
+          "display": "un endroit / un lieu"
+        },
+        {
+          "en": "department store",
+          "fr": [
+            "un grand magasin"
+          ]
+        },
+        {
+          "en": "gym",
+          "fr": [
+            "un gymnase"
+          ]
+        },
+        {
+          "en": "hospital",
+          "fr": [
+            "un hôpital"
+          ]
+        },
+        {
+          "en": "store",
+          "fr": [
+            "un magasin"
+          ]
+        },
+        {
+          "en": "market",
+          "fr": [
+            "un marché"
+          ]
+        },
+        {
+          "en": "museum",
+          "fr": [
+            "un musée"
+          ]
+        },
+        {
+          "en": "park",
+          "fr": [
+            "un parc"
+          ]
+        },
+        {
+          "en": "pool",
+          "fr": [
+            "une piscine"
+          ]
+        },
+        {
+          "en": "restaurant",
+          "fr": [
+            "un restaurant"
+          ]
+        },
+        {
+          "en": "city, town",
+          "fr": [
+            "une ville"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "name": "Food",
+      "folder": "unit-4",
+      "selected": false,
+      "words": [
+        {
+          "en": "waitress",
+          "fr": [
+            "une serveuse"
+          ]
+        },
+        {
+          "en": "bottle of water",
+          "fr": [
+            "une bouteille d'eau"
+          ]
+        },
+        {
+          "en": "soup",
+          "fr": [
+            "une soupe"
+          ]
+        },
+        {
+          "en": "bill; check (restaurant)",
+          "fr": [
+            "l'addition"
+          ]
+        },
+        {
+          "en": "price",
+          "fr": [
+            "le prix"
+          ]
+        },
+        {
+          "en": "croissants",
+          "fr": [
+            "les croissants"
+          ]
+        },
+        {
+          "en": "to be hungry",
+          "fr": [
+            "avoir faim"
+          ]
+        },
+        {
+          "en": "to be thirsty",
+          "fr": [
+            "avoir soif"
+          ]
+        },
+        {
+          "en": "tea",
+          "fr": [
+            "le thé"
+          ]
+        },
+        {
+          "en": "sugar",
+          "fr": [
+            "le sucre"
+          ]
+        },
+        {
+          "en": "cup",
+          "fr": [
+            "une tasse"
+          ]
+        },
+        {
+          "en": "to eat something",
+          "fr": [
+            "manger quelque chose"
+          ]
+        },
+        {
+          "en": "coffee",
+          "fr": [
+            "un café"
+          ]
+        },
+        {
+          "en": "éclair",
+          "fr": [
+            "un éclair"
+          ]
+        },
+        {
+          "en": "to bring",
+          "fr": [
+            "apporter"
+          ]
+        },
+        {
+          "en": "to cost",
+          "fr": [
+            "coûter"
+          ]
+        },
+        {
+          "en": "How much does ... cost?",
+          "fr": [
+            "Combien coûte...?",
+            "Combien coûte…?",
+            "Combien coûte ?",
+            "Combien coûte?",
+            "Combien coûte"
+          ]
+        },
+        {
+          "en": "baguette",
+          "fr": [
+            "une baguette"
+          ]
+        },
+        {
+          "en": "butter",
+          "fr": [
+            "le beurre"
+          ]
+        },
+        {
+          "en": "fries",
+          "fr": [
+            "des frites"
+          ]
+        },
+        {
+          "en": "cheese",
+          "fr": [
+            "un fromage"
+          ]
+        },
+        {
+          "en": "ham",
+          "fr": [
+            "le jambon"
+          ]
+        },
+        {
+          "en": "bread; loaf of bread",
+          "fr": [
+            "un pain"
+          ]
+        },
+        {
+          "en": "country bread",
+          "fr": [
+            "un pain de campagne"
+          ]
+        },
+        {
+          "en": "sandwich",
+          "fr": [
+            "un sandwich"
+          ]
+        },
+        {
+          "en": "drink; beverage",
+          "fr": [
+            "une boisson"
+          ]
+        },
+        {
+          "en": "soda; fizzy drink",
+          "fr": [
+            "une boisson gazeuse"
+          ]
+        },
+        {
+          "en": "hot chocolate",
+          "fr": [
+            "un chocolat chaud"
+          ]
+        },
+        {
+          "en": "water",
+          "fr": [
+            "une eau"
+          ]
+        },
+        {
+          "en": "mineral water",
+          "fr": [
+            "une eau minérale"
+          ]
+        },
+        {
+          "en": "orange juice",
+          "fr": [
+            "un jus d'orange"
+          ]
+        },
+        {
+          "en": "apple juice",
+          "fr": [
+            "un jus de pomme"
+          ]
+        },
+        {
+          "en": "milk",
+          "fr": [
+            "le lait"
+          ]
+        },
+        {
+          "en": "lemonade",
+          "fr": [
+            "une limonade"
+          ]
+        },
+        {
+          "en": "iced tea",
+          "fr": [
+            "un thé glacé"
+          ]
+        },
+        {
+          "en": "a lot; much; many",
+          "fr": [
+            "beaucoup"
+          ]
+        },
+        {
+          "en": "piece",
+          "fr": [
+            "un morceau"
+          ]
+        },
+        {
+          "en": "all; everything",
+          "fr": [
+            "tout"
+          ]
+        },
+        {
+          "en": "too much; too many",
+          "fr": [
+            "trop"
+          ]
+        },
+        {
+          "en": "glass",
+          "fr": [
+            "un verre"
+          ]
+        }
+      ]
+    }
+  ]
+}
+</script>
+<script>
+// Data adapter: presentation names and vocabulary live only in vocabulary-data above.
+const CONTENT=JSON.parse(document.getElementById('vocabulary-data').textContent);
+document.title=CONTENT.title;
+const SETS=CONTENT.sets.map(s=>[s.name,s.words.map(w=>[w.en,w.fr,w.display])]);
+const NUM=SETS[CONTENT.sets.findIndex(s=>s.id==='numbers')]?.[1]||[];
+const W=SETS.flatMap((s,k)=>s[1].map(w=>(w.set=k,w)));
+/* hand-written misspellings for the new sets (accents unchanged) */
+const M2={
+'quitter':['quiter','quitterr'],'bavarder':['bavardder','bavarer'],'passer':['paser','passerr'],'déjeuner':['déjeunner','dégeuner'],'dépenser':['dépancer','dépensser'],
+'une maison':['une maizon','une maisson'],'une épicerie':['une épiserie','une épiceri'],'une terrasse de café':['une terase de café','une terrasse de cafée'],
+'une place':['une plase','une plasse'],'un kiosque':['un kiosk','un quiosque'],'une église':['une églize','une églisse'],'une montagne':['une montane','une montagn'],
+'danser':['dancer','dansser'],'explorer':['explorrer','esplorer'],'fréquenter':['fréquanter','frécquenter'],'inviter':['invitter','enviter'],'nager':['nagger','najer'],'patiner':['pattiner','patinner'],
+'une banlieue':['une banlieu','une banlieux'],'une boîte (de nuit)':['une boîte (de nui)','une boîtte (de nuit)'],'un bureau':['un burreau','un bureaux'],
+'un centre commercial':['un centre comercial','un centre commerciale'],'un centre-ville':['un centre-vile','un centre ville'],
+'un cinéma (ciné)':['un cinéma (cinné)','un cinémma (ciné)'],'un endroit / un lieu':['un endroit / un lieux','un endroi / un lieu'],
+'un grand magasin':['un grand magazin','un grant magasin'],'un gymnase':['un gymnaze','un gimnase'],'un hôpital':['un hôpitale','un hôpittal'],
+'un magasin':['un magazin','un magassin'],'un marché':['un marchée','un marrché'],'un musée':['un musé','un muzée'],'un parc':['un par','un parck'],
+'une piscine':['une pisine','une piscinne'],'un restaurant':['un restaurent','un resturant'],'une ville':['une vile','une villle'],
+'frisé(e)':['frizé(e)','frissé(e)'],'mauvais(e)':['mauvai(e)','movais(e)'],'pauvre':['povre','pauvr'],'vrai(e)':['vrais(e)','vray(e)'],'de taille moyenne':['de taile moyenne','de taille moyene'],
+'curieux / curieuse':['curieu / curieuse','curieux / curieuze'],'malheureux / malheureuse':['malheureu / malheureuse','malheureux / malheureuze'],'nerveux / nerveuse':['nerveu / nerveuse','nerveux / nerveuze'],'nouveau / nouvelle':['nouvau / nouvelle','nouveau / nouvele'],'sérieux / sérieuse':['sérieu / sérieuse','sérieux / sérieuze'],
+'drôle':['drôlle','drôl'],'fatigué(e)':['fatigé(e)','fatiqué(e)'],'fort(e)':['for(e)','fortt(e)'],'rapide':['rappide','rapid'],'triste':['trist','tristte'],
+'discret / discrète':['discet / discrète','discret / discrètte'],'inquiet / inquiète':['inquet / inquiète','inquiet / inquiètte'],'jaloux / jalouse':['jalou / jalouse','jaloux / jalouze'],'paresseux / paresseuse':['paresseu / paresseuse','paresseux / paresseuze'],'travailleur / travailleuse':['travaileur / travailleuse','travailleur / travailleuze'],
+'un coiffeur / une coiffeuse':['un coifeur / une coiffeuse','un coiffeur / une coiffeuze'],'un(e) musicien(ne)':['un(e) musicien(e)','un(e) musitien(ne)'],'un(e) propriétaire':['un(e) propriétair','un(e) proprriétaire'],'par':['parr','pare'],
+'à côté de':['à côtté de','à côtée de'],'à droite de':['à droit de','à drotte de'],'à gauche de':['à gauce de','à gauch de'],
+'dans / en':['dan / en','dans / an'],'derrière':['derrièrre','derièrre'],'devant':['devent','devan'],
+'en face de':['en fasse de','an face de'],'entre':['entr','antre'],'loin de':['loing de','lion de'],
+'près de':['prèss de','prèes de'],'sous':['sou','souss'],'sur':['sure','surr'],
+'actif / active':['actiff / active','actif / activ'],'antipathique':['antipatique','antipathyque'],
+'courageux / courageuse':['courageu / courageuse','courageux / courajeuse'],'cruel(le)':['cruell(le)','cruel(lle)'],
+'doux / douce':['dous / douce','doux / douse'],'ennuyeux / ennuyeuse':['enuyeux / ennuyeuse','ennuyeux / ennuieuse'],
+'étranger / étrangère':['étranjer / étrangère','étranger / étrangèrre'],'faible':['faibble','feible'],
+'favori(te)':['favory(te)','favorri(te)'],'fou / folle':['fou / fole','fout / folle'],
+'généreux / généreuse':['généreu / généreuse','généreux / généreuze'],
+'génial(e) (géniaux m., pl.)':['génial(e) (géniaus m., pl.)','génial(le) (géniaux m., pl.)'],
+'gentil(le)':['gentil(e)','jentil(le)'],'lent(e)':['lant(e)','lentt(e)'],'méchant(e)':['méchan(e)','méchent(e)'],
+'modeste':['modest','moddeste'],'pénible':['pénibble','pénibel'],'prêt(e)':['prêtt(e)','prêt(te)'],
+'sportif / sportive':['sportiff / sportive','sportif / sportiv'],
+'un(e) architecte':['un(e) architect','un(e) arcitecte'],'un(e) artiste':['un(e) artist','un(e) artisste'],
+'un(e) athlète':['un(e) atlète','un(e) athlètte'],'un(e) avocat(e)':['un(e) avocat(te)','un(e) advocat(e)'],
+'un(e) dentiste':['un(e) dentist','un(e) dantiste'],
+[`un homme / une femme d'affaires`]:[`un homme / une femme d'affaire`,`un homme / une femme d'afaires`],
+'un ingénieur':['un ingéniur','un ingénieure'],'un(e) journaliste':['un(e) jounaliste','un(e) journalist'],
+'un médecin':['un médecein','un médicin'],
+'beau':['bau','beou'],'belle':['bele','bellle'],'beaux':['beaus','baux'],'belles':['beles','belless'],
+'bon':['bom','bonn'],'bonne':['bone','bonnne'],'bons':['bonz','bonns'],'bonnes':['bones','bonnnes'],
+'fier':['fiet','fierr'],'fière':['fièrre','fièr'],'fiers':['fierz','fierrs'],'fières':['fièrres','fièrs'],
+'gros':['gro','groz'],'grosse':['grose','grossee'],'grosses':['groses','grosess'],
+'heureux':['heureu','heureus'],'heureuse':['heureuze','hereuse'],'heureuses':['heureuzes','hereuses'],
+'intellectuel':['intelectuel','intellectuell'],'intellectuelle':['intelectuelle','intellectuele'],'intellectuels':['intelectuels','intellectules'],'intellectuelles':['intelectuelles','intellectueles'],
+'long':['lon','longg'],'longue':['longe','lonque'],'longs':['lons','longgs'],'longues':['longes','lonques'],
+'naïf':['naïff','naïph'],'naïve':['naïv','naïfe'],'naïfs':['naïffs','naïfz'],'naïves':['naïfes','naïvs'],
+'roux':['rou','rouxx'],'rousse':['rouse','roussee'],'rousses':['rouses','roussess'],
+'vieux':['vieu','vieus'],'vieille':['vielle','vieile'],'vieilles':['vielles','vieiles'],
+'bleu(e)':['blue(e)','bleu(ee)'],'blond(e)':['blon(e)','blonnd(e)'],'brun(e)':['brum(e)','brunn(e)'],
+'châtain':['châtin','châtaim'],'court(e)':['cour(e)','cort(e)'],'grand(e)':['grant(e)','grandd(e)'],
+'jeune':['jeunne','jenue'],'joli(e)':['jolli(e)','joly(e)'],'laid(e)':['lais(e)','lait(e)'],
+'marron':['maron','marrom'],'noir(e)':['noir(ee)','nior(e)'],'petit(e)':['pettit(e)','peti(e)'],
+'raide':['raidde','rayde'],'vert(e)':['ver(e)','vertt(e)'],
+'mon, ma, mes':['mon, ma, mess','mon, mas, mes'],'ton, ta, tes':['ton, ta, tess','tom, ta, tes'],
+'son, sa, ses':['son, sa, sess','sons, sa, ses'],'notre, notre, nos':['note, notre, nos','notre, notre, noss'],
+'votre, votre, vos':['vote, votre, vos','votre, votre, voss'],'leur, leur, leurs':['leur, leur, leur','leur, leure, leurs']
+};
+/* numbers: common slips applied to the number words */
+const R=[['soixante','soixant'],['soixante','soixente'],['quatre-vingt','quatre vingt'],['quatre','quattre'],['vingt','vint'],['vingts','vingt'],['vingt-','vingts-'],['dix','dis'],['sept','set'],['huit','uit'],['neuf','neuff'],['treize','treise'],['quatorze','catorze'],['quinze','quinse'],['seize','seise'],['douze','douse'],['onze','onse'],['cinq','cinc'],['deux','deu'],['trois','troi'],['six','sis'],['et un','et-un'],['un','une'],['cent','sent'],['cent','cents']];
+NUM.forEach(w=>{const s=w[1][0],a=R.filter(r=>s.includes(r[0]));M2[s]=[a[0],a[a.length-1]].map(r=>s.replace(r[0],r[1]))});
+const $=id=>document.getElementById(id);
+const useArt=()=>$('art').checked;
+const base=s=>s.toLowerCase().replace(/œ/g,'oe').replace(/[’‘]/g,"'").replace(/\s*[,\/;]\s*/g,' ').replace(/\s+/g,' ').trim();
+const noAcc=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const noArt=s=>s.replace(/^(?:(?:un|une|le|la|les|des|du)\s+|de\s+l['’]|de\s+la\s+|l['’])/i,'');
+const stripArt=s=>s.split(/\s*\/\s*/).map(noArt).join(' / ');
+const prep=s=>useArt()?base(s):noArt(base(s));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+let q=[],i=0,score=0,missed=[],phase='ask',tries=0,hn=0,opts=[];
+const S={order:'random',lang:'fr',mode:'typing'};
+let review=false,first=null,rounds=0,answered=0,failed=false,att=0;
+/* No sets selected on opening. Defaults are editable in vocabulary-data. */
+const on=CONTENT.sets.map(s=>Boolean(s.selected)),setOf=w=>w.set;
+const deck=()=>W.filter(w=>on[setOf(w)]);
+function renderVocab(){
+  const d=deck(),u=$('vocab');$('vh').textContent=d.length+' words';u.replaceChildren();
+  d.forEach(w=>{
+    const li=document.createElement('li'),b=document.createElement('button');
+    const french=document.createElement('span'),english=document.createElement('span');
+    b.type='button';b.className='vocab-word';french.lang='fr';french.textContent=answer(w);
+    english.lang='en';english.className='translation';english.textContent=w[0];english.hidden=true;
+    b.append(french,english);b.setAttribute('aria-expanded','false');
+    const reveal=()=>{english.hidden=false;b.classList.add('held');b.setAttribute('aria-expanded','true')};
+    const hide=()=>{english.hidden=true;b.classList.remove('held');b.setAttribute('aria-expanded','false')};
+    b.addEventListener('pointerdown',e=>{if(e.button!==0)return;b.setPointerCapture(e.pointerId);reveal()});
+    ['pointerup','pointercancel','lostpointercapture','blur'].forEach(type=>b.addEventListener(type,hide));
+    b.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();reveal()}});
+    b.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();hide()}});
+    b.addEventListener('contextmenu',e=>e.preventDefault());li.append(b);u.append(li);
+  });
+}
+function hideTranslations(){document.querySelectorAll('.vocab-word').forEach(b=>{b.classList.remove('held');b.setAttribute('aria-expanded','false');b.querySelector('.translation').hidden=true})}
+window.addEventListener('blur',hideTranslations);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)hideTranslations()});
+const mode=()=>S.lang==='en'?'mc':S.mode;
+
+/* ---------- helpers ---------- */
+function answer(w){return w[2]||w[1][0]}
+const frShow=w=>useArt()?answer(w):stripArt(answer(w));
+const prompt_=w=>S.lang==='fr'?w[0]:answer(w);
+const same=w=>W.filter(x=>x[1].some(a=>w[1].includes(a)));
+const fmt=x=>S.lang==='fr'?frShow(x):x[0];
+const ansText=w=>S.lang==='fr'?frShow(w):same(w).map(x=>x[0]).join(' / ');
+
+/* hand-written misspellings (accents unchanged, article untouched) */
+const M={
+"un époux":["un épous","un épeux"],
+"une épouse":["une épouze","une épousse"],
+"aîné(e)":["aîmé(e)","aînné(e)"],
+"cadet(te)":["caddet(te)","cadet(ette)"],
+"un beau-frère":["un beau-frèrre","un baeu-frère"],
+"un beau-père":["un beau-pèrre","un baeu-père"],
+"une belle-mère":["une bele-mère","une belle-mèrre"],
+"une belle-sœur":["une belle-sœure","une bellle-sœur"],
+"un(e) cousin(e)":["un(e) cousain(e)","un(e) couzin(e)"],
+"un demi-frère":["un demi-frèrre","un demie-frère"],
+"une demi-sœur":["une demie-sœur","une demi-sœure"],
+"les enfants":["les enfents","les anfants"],
+"un mari / un époux":["un marri / un époux","un mari / un épous"],
+"une épouse / une femme":["une épouze / une femme","une épouse / une famme"],
+"une femme":["une famme","une femne"],
+"une famille":["une famile","une familie"],
+"une fille":["une file","une fillle"],
+"un fils":["un fil","un fisl"],
+"un frère":["un frèrre","un frèr"],
+"une grand-mère":["une grande-mère","une grand-mèrre"],
+"un grand-père":["un grand-pèrre","un grant-père"],
+"les grands-parents":["les grand-parents","les grands-parrents"],
+"une mère":["une mèrre","une mèr"],
+"un neveu":["un neveux","un nevue"],
+"une nièce":["une nièse","une niècce"],
+"un oncle":["un onkle","un oncel"],
+"les parents":["les parrents","les parants"],
+"un père":["un pèrre","un pèr"],
+"une petite-fille":["une petite-file","une petitte-fille"],
+"un petit-fils":["un petit-fil","un pettit-fils"],
+"les petits-enfants":["les petit-enfants","les petits-enfents"],
+"une sœur":["une sœure","une sœr"],
+"une tante":["une tente","une tantte"],
+"un chat":["un chas","un chatt"],
+"un chien":["un chein","un chienn"],
+"un oiseau":["un oiseaux","un oisau"],
+"un poisson":["un poison","un poissson"],
+"divorcer":["divorser","devorcer"],
+"épouser":["épouzer","épousser"],
+"célibataire":["célibatair","célibattaire"],
+"divorcé(e)":["divorsé(e)","devorcé(e)"],
+"fiancé(e)":["fiansé(e)","fianncé(e)"],
+"marié(e)":["marrié(e)","maryé(e)"],
+"séparé(e)":["séparré(e)","sépparé(e)"],
+"veuf / veuve":["veuff / veuve","veuf / veuv"],
+"un(e) voisin(e)":["un(e) voizin(e)","un(e) voisain(e)"]
+};
+function makeOptions(w){
+  const sm=same(w),correct=fmt(w),P=deck().length>=(S.lang==='en'?14:6)?deck():W;
+  if(S.lang==='en'){
+    const out=[correct];
+    for(const x of shuffle(P)){if(out.length>=12)break;if(!sm.includes(x)&&!out.includes(x[0]))out.push(x[0])}
+    return {list:shuffle(out),good:sm.map(fmt)};
+  }
+  const ws=[w];
+  for(const x of shuffle(P)){if(ws.length>=4)break;if(!ws.some(y=>same(y).includes(x)))ws.push(x)}
+  const out=[];
+  ws.forEach(x=>{const k=answer(x);[k,...(M[k]||M2[k]||[])].forEach(s=>out.push(useArt()?s:stripArt(s)))});
+  return {list:shuffle(out),good:[correct]};
+}
+
+/* ---------- quiz flow ---------- */
+function start(list,isReview){
+  if(!isReview){review=false;first=null;rounds=0}
+  q=S.order==='random'?shuffle(list):list.slice().sort((a,b)=>W.indexOf(a)-W.indexOf(b));
+  i=0;score=0;missed=[];answered=0;
+  if(!q.length){$('quiz').hidden=true;$('end').hidden=false;$('fill').style.width='0';$('prog').textContent='';$('rev').hidden=true;$('sc').textContent='';$('endt').textContent='No vocabulary selected';$('endm').innerHTML='<p>Check at least one set in the menu.</p>';$('redo').hidden=true;return}
+  $('quiz').hidden=false;$('end').hidden=true;show();
+}
+function layout(){
+  const mc=mode()==='mc',ask=phase==='ask';
+  $('in').hidden=mc;$('accs').hidden=mc;
+  $('opts').hidden=!mc;
+  $('go').hidden=mc&&ask;
+  $('row2').hidden=mc||!ask;$('pb').hidden=mc||ask;
+  $('artl').hidden=S.lang==='en';
+}
+function show(){
+  const w=q[i];phase='ask';tries=0;hn=0;failed=false;att=0;
+  $('en').textContent=prompt_(w);$('en').lang=S.lang==='fr'?'en':'fr';
+  const inp=$('in');inp.value='';inp.disabled=false;
+  $('hint').hidden=true;$('fb').className='fb';$('fb').innerHTML='';
+  $('go').textContent='Check';
+  $('prog').textContent=(i+1)+' of '+q.length;$('rev').hidden=!review;
+  $('sc').textContent='Correct: '+score;
+  $('fill').style.width=(i/q.length*100)+'%';
+  const o=$('opts');o.innerHTML='';
+  if(mode()==='mc'){
+    const m=makeOptions(w);opts=m;
+    m.list.forEach(s=>{const b=document.createElement('button');b.type='button';b.textContent=s;if(S.lang==='en')b.lang='en';else b.lang='fr';b.onclick=()=>pick(s);o.appendChild(b)});
+  }
+  layout();
+  if(mode()==='typing')inp.focus();
+}
+function reveal(w,good,chosen){
+  phase='result';if(!failed){answered++;if(!good)missed.push(w)}const mc=mode()==='mc';$('in').disabled=mc;if(!mc){$('in').value='';$('hint').hidden=true}
+  const f=$('fb');
+  if(good){f.className='fb ok';f.innerHTML=(failed?'Correct, but this card stays in review.':'Correct!')+'<b>'+ansText(w)+'</b>'}
+  else{f.className='fb no';f.innerHTML='The answer is<b>'+ansText(w)+'</b>'}
+  if(mode()==='mc')[...$('opts').children].forEach(b=>{
+    b.disabled=true;
+    if(opts.good.includes(b.textContent))b.classList.add('ok');
+    else if(b.textContent===chosen)b.classList.add('no');
+  });
+  $('go').textContent=i+1<q.length?'Next':'See results';
+  $('sc').textContent='Correct: '+score;
+  layout();(mc?$('go'):$('in')).focus();
+}
+function pick(s){
+  if(phase!=='ask')return;
+  const ok=opts.good.includes(s);if(ok)score++;
+  reveal(q[i],ok,s);
+}
+function check(){
+  const w=q[i],v=$('in').value;
+  if(!v.trim())return;
+  const acc=w[1];
+  const ok=acc.some(a=>prep(a)===prep(v));
+  if(ok){if(!failed)score++;return reveal(w,true)}
+  const near=acc.some(a=>noAcc(prep(a))===noAcc(prep(v)));
+  const art=useArt()&&acc.some(a=>noArt(base(a))===base(v));
+  if((near||art)&&tries===0){
+    tries++;const f=$('fb');f.className='fb mid';
+    f.textContent=art?'Close. Add the article and check the gender.':'Almost. Check your accents and spelling.';
+    return;
+  }
+  att++;
+  if(!failed){failed=true;missed.push(w);answered++}
+  if(att>=3)return reveal(w,false);
+  const f=$('fb');f.className='fb no';f.textContent='Not quite. '+(3-att)+(att===2?' more try.':' more tries.');$('in').select();
+}
+function next(){i++;if(i>=q.length)finish(false);else show()}
+function finish(early){
+  if(!review&&!first)first={s:score,t:early?answered:q.length};
+  if(!early&&missed.length){review=true;rounds++;return start(missed.slice(),true)}
+  $('quiz').hidden=true;$('end').hidden=false;$('rev').hidden=true;
+  $('fill').style.width='100%';
+  let t,h='';
+  if(early){t=score+' of '+answered+' correct';h='<p>Ended early'+(review?' during review round '+rounds:'')+', '+(q.length-answered)+' cards left.</p>'}
+  else t=review?'Review complete':score+' of '+q.length+' correct';
+  if(review)h+='<p>First pass: '+first.s+' of '+first.t+' correct.'+(early?'':' Cleared in '+rounds+(rounds===1?' review round.':' review rounds.'))+'</p>';
+  else if(!missed.length)h+='<p>No misses. Nice work.</p>';
+  if(missed.length)h+='<p>To review:</p><ul>'+missed.map(w=>'<li>'+prompt_(w)+' = <b>'+ansText(w)+'</b></li>').join('')+'</ul>';
+  $('endt').textContent=t;$('endm').innerHTML=h;
+  $('redo').hidden=!missed.length;
+}
+$('go').onclick=()=>phase==='ask'?check():next();
+function practice(){
+  const w=q[i],v=$('in').value;
+  if(!v.trim())return;
+  const ok=w[1].some(a=>prep(a)===prep(v)),f=$('fb');
+  f.className=ok?'fb ok':'fb no';
+  f.innerHTML=(ok?'Correct!':'Not quite. The answer is')+'<b>'+ansText(w)+'</b>';
+  $('in').value='';$('in').focus();
+}
+$('pb').onclick=practice;
+$('in').addEventListener('input',()=>{if(phase==='result')$('fb').className='fb'});
+$('in').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();phase==='ask'?check():practice()}});
+$('hb').onclick=()=>{
+  const w=q[i];if(!failed){failed=true;missed.push(w);answered++}let a=useArt()?w[1][0]:noArt(w[1][0]);hn++;
+  $('hint').textContent=a.split('').map((c,k)=>/[\s\-']/.test(c)||k<hn?c:'_').join('');
+  $('hint').hidden=false;$('in').focus();
+};
+$('sb').onclick=()=>reveal(q[i],false);
+$('again').onclick=()=>start(deck());
+$('redo').onclick=()=>{review=true;rounds++;start(missed.slice(),true)};
+$('restart').onclick=()=>start(deck());
+$('endb').onclick=()=>{if(q.length&&$('end').hidden)finish(true)};
+$('art').onchange=()=>{if(mode()==='mc'&&phase==='ask')show()};
+
+/* ---------- menu ---------- */
+function sync(){
+  document.querySelectorAll('.seg button').forEach(b=>{
+    const k=b.dataset.k,v=b.dataset.v;
+    b.setAttribute('aria-checked',String(k==='mode'?mode()===v:S[k]===v));
+    if(k==='mode'&&v==='typing')b.disabled=S.lang==='en';
+  });
+  $('lock').hidden=S.lang!=='en';
+}
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
+  if(b.disabled||S[b.dataset.k]===b.dataset.v)return;
+  S[b.dataset.k]=b.dataset.v;sync();start(deck());
+});
+$('mb').onclick=()=>{
+  const d=$('dock'),o=d.classList.toggle('open');hideTranslations();
+  document.body.classList.toggle('menu-open',o);
+  $('mb').setAttribute('aria-expanded',o);$('mb').setAttribute('aria-label',o?'Close menu':'Open menu');
+};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('dock').classList.contains('open'))$('mb').click()});
+// Folder headers only expand/collapse; checkboxes select the practice deck.
+CONTENT.folders.forEach(folder=>{
+  const details=document.createElement('details'),summary=document.createElement('summary'),items=document.createElement('div');
+  details.className='set-folder';details.open=true;items.className='folder-items';
+  const members=CONTENT.sets.map((s,k)=>({s,k})).filter(({s})=>s.folder===folder.id);
+  const label=document.createElement('span'),count=document.createElement('small');
+  label.textContent=folder.name;count.textContent=members.length+' '+(members.length===1?'set':'sets');summary.append(label,count);details.append(summary,items);
+  members.forEach(({s,k})=>{
+    const l=document.createElement('label'),c=document.createElement('input'),name=document.createElement('span'),size=document.createElement('small');
+    c.type='checkbox';c.checked=on[k];name.textContent=s.name;size.textContent=s.words.length;
+    c.onchange=()=>{on[k]=c.checked;renderVocab();start(deck())};l.append(c,name,size);items.append(l);
+  });
+  $('sets').append(details);
+});
+renderVocab();
+
+'éèêàâîïôùûçœë'.split('').forEach(ch=>{
+  const b=document.createElement('button');b.type='button';b.textContent=ch;b.setAttribute('aria-label','Insert '+ch);
+  b.addEventListener('pointerdown',e=>e.preventDefault());
+  b.onclick=()=>{const el=$('in');if(el.disabled)return;el.setRangeText(ch,el.selectionStart,el.selectionEnd,'end');el.dispatchEvent(new Event('input'));el.focus()};
+  $('accs').appendChild(b);
+});
+sync();start(deck());
+</script>
+</body>
+</html>
